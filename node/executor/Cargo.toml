@@ -1,0 +1,56 @@
+[package]
+name = "node-executor"
+version = "3.0.0-dev"
+authors.workspace = true
+description = "Substrate node implementation in Rust."
+edition.workspace = true
+license = "Apache-2.0"
+homepage = "https://substrate.io"
+repository.workspace = true
+publish = false
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.6.1" }
+scale-info = { version = "2.5.0", features = ["derive"] }
+frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+node-primitives = { path = "../primitives" }
+kitchensink-runtime = { path = "../runtime" }
+sc-executor = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-core = { version = "21.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-keystore = { version = "0.27.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-state-machine = { version = "0.28.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-tracing = { version = "10.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-trie = { version = "22.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-statement-store = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+
+[dev-dependencies]
+criterion = "0.4.0"
+futures = "0.3.21"
+wat = "1.0"
+frame-support = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+frame-system = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+node-testing = { path = "../testing" }
+pallet-balances = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-contracts = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-im-online = {version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-glutton = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-sudo = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-timestamp = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-treasury = {version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-transaction-payment = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-application-crypto = { version = "23.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-root-testing = { version = "1.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-consensus-babe = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-externalities = { version = "0.19.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-keyring = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sp-runtime = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+
+[features]
+stress-test = []
+
+[[bench]]
+name = "bench"
+harness = false

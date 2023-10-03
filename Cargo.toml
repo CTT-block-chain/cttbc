@@ -1,0 +1,20 @@
+[workspace.package]
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2021"
+repository = "https://github.com/paritytech/polkadot-sdk.git"
+license = "GPL-3.0-only"
+
+[profile.release]
+# Substrate runtime requires unwinding.
+panic = "unwind"
+
+
+[workspace]
+members = [
+	"node/cli",
+	"node/executor",
+	"node/runtime",
+    "node/rpc",
+    "node/executor",
+#	"pallets/*",
+]
