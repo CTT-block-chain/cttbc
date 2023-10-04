@@ -132,6 +132,8 @@ pallet-whitelist = { version = "4.0.0-dev", git = "https://github.com/CTT-block-
 pallet-tx-pause = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false}
 pallet-safe-mode = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false}
 
+pallet-members = { path = "../../pallets/members", default-features = false }
+
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", optional = true }
 
@@ -183,6 +185,7 @@ std = [
 	"pallet-insecure-randomness-collective-flip/std",
 	"pallet-lottery/std",
 	"pallet-membership/std",
+	"pallet-members/std",
 	"pallet-message-queue/std",
 	"pallet-mmr/std",
 	"pallet-multisig/std",
@@ -278,6 +281,7 @@ runtime-benchmarks = [
 	"pallet-indices/runtime-benchmarks",
 	"pallet-lottery/runtime-benchmarks",
 	"pallet-membership/runtime-benchmarks",
+	"pallet-members/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
 	"pallet-mmr/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
@@ -351,6 +355,7 @@ try-runtime = [
 	"pallet-insecure-randomness-collective-flip/try-runtime",
 	"pallet-lottery/try-runtime",
 	"pallet-membership/try-runtime",
+	"pallet-members/try-runtime",
 	"pallet-message-queue/try-runtime",
 	"pallet-mmr/try-runtime",
 	"pallet-multisig/try-runtime",

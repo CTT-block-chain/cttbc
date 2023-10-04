@@ -16,5 +16,5 @@ members = [
 	"node/runtime",
     "node/rpc",
     "node/executor",
-#	"pallets/*",
+	"pallets/*",
 ]
