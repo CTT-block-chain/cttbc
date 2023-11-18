@@ -22,12 +22,14 @@ scale-info = { version = "2.9.0", default-features = false, features = [
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
-sp-std = { version = "8.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false}
+sp-std = { version = "8.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
+sp-core = { version = "21.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
+sp-io = { version = "23.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
+sp-runtime = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
+pallet-balances = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 
 [dev-dependencies]
-sp-core = { version = "21.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
-sp-io = { version = "23.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
-sp-runtime = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+
 
 [features]
 default = ["std"]
@@ -41,6 +43,7 @@ std = [
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	"pallet-balances/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

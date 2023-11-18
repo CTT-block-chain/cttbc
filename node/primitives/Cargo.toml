@@ -13,9 +13,10 @@ publish = false
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-sp-core = { version = "21.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false}
-sp-runtime = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false}
+sp-core = { version = "21.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
+sp-runtime = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
+sp-std = { version = "8.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", default-features = false }
 
 [features]
-default = [ "std" ]
-std = [ "sp-core/std", "sp-runtime/std" ]
+default = ["std"]
+std = ["sp-core/std", "sp-runtime/std", "sp-std/std"]

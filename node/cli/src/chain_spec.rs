@@ -367,6 +367,7 @@ pub fn testnet_genesis(
 			..Default::default()
 		},
 		glutton: Default::default(),
+		members: Default::default(),
 	}
 }
 

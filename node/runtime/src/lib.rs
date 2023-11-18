@@ -2018,6 +2018,7 @@ impl pallet_broker::Config for Runtime {
 
 impl pallet_members::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
 }
 
 construct_runtime!(
