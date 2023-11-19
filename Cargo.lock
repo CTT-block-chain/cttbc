@@ -6427,6 +6427,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "node-primitives 2.0.0",
  "pallet-balances",
  "parity-scale-codec",
  "scale-info",

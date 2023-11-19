@@ -1,14 +1,16 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Decode, Encode};
 //use sp_std::vec::Vec;
 use frame_support::{
 	dispatch::PostDispatchInfo,
 	ensure, fail,
-	traits::{Currency, Get},
+	traits::{Currency, Get, ReservableCurrency},
 	DefaultNoBound,
 };
 
-use sp_runtime::traits::StaticLookup;
+use node_primitives::{AuthAccountId, Membership};
+use sp_runtime::{traits::StaticLookup, traits::TrailingZeroInput, RuntimeDebug};
 use sp_std::prelude::*;
 
 /// Edit this file to define custom logic or remove it if it is not needed.
@@ -20,6 +22,68 @@ type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 const LOG_TARGET: &str = "ctt::members";
+
+#[derive(Encode, Decode, Clone, Default, RuntimeDebug)]
+pub struct AppData<Balance> {
+	name: Vec<u8>,
+	return_rate: u32,
+	stake: Balance,
+}
+
+#[derive(Encode, Decode, Clone, RuntimeDebug)]
+pub struct StableExchangeData<T: Config> {
+	receiver: T::AccountId,
+	amount: BalanceOf<T>,
+	redeemed: bool,
+}
+
+impl<T: Config> Default for StableExchangeData<T> {
+	fn default() -> Self {
+		StableExchangeData {
+			receiver: T::AccountId::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
+			amount: 0u32.into(),
+			redeemed: false,
+		}
+	}
+}
+
+#[derive(Encode, Decode, Clone, Default, PartialEq, RuntimeDebug)]
+pub struct ModelExpertAddMemberParams {
+	app_id: u32,
+	model_id: Vec<u8>,
+	kpt_profit_rate: u32,
+}
+
+#[derive(Encode, Decode, Clone, Default, PartialEq, RuntimeDebug)]
+pub struct ModelExpertDelMemberParams<Account> {
+	app_id: u32,
+	model_id: Vec<u8>,
+	member: Account,
+}
+
+#[derive(Encode, Decode, Clone, PartialEq, RuntimeDebug)]
+pub struct AppKeyManageParams<Account> {
+	admin: AuthAccountId,
+	app_id: u32,
+	member: Account,
+}
+
+// impl default for AppKeyManageParams
+// impl<Account> Default for AppKeyManageParams<Account> {
+// 	fn default() -> Self {
+// 		AppKeyManageParams {
+// 			admin: AuthAccountId::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
+// 			app_id: 0,
+// 			member: Account::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
+// 		}
+// 	}
+// }
+
+#[derive(Encode, Decode, Clone, Default, PartialEq, RuntimeDebug)]
+pub struct FinanceMemberParams<Account, Balance> {
+	deposit: Balance,
+	member: Account,
+}
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -33,36 +97,39 @@ pub mod pallet {
 	#[pallet::pallet]
 	#[pallet::storage_version(STORAGE_VERSION)]
 	#[pallet::without_storage_info]
-	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
+	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config<I: 'static = ()>: frame_system::Config {
+	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type RuntimeEvent: From<Event<Self, I>>
-			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The runtime's definition of a Currency.
-		type Currency: Currency<Self::AccountId>;
+		type Currency: ReservableCurrency<Self::AccountId>;
 	}
 
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
 	#[pallet::storage]
 	#[pallet::getter(fn finance_members)]
-	pub(super) type FinanceMembers<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+	pub(super) type FinanceMembers<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn finance_root)]
-	pub(super) type FinanceRoot<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, Option<T::AccountId>, ValueQuery>;
+	pub(super) type FinanceRoot<T: Config> = StorageValue<_, Option<T::AccountId>, ValueQuery>;
+
+	// Finance member deposit records
+	#[pallet::storage]
+	#[pallet::getter(fn finance_member_deposit)]
+	pub(super) type FinanceMemberDeposit<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, BalanceOf<T>, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config<I>, I: 'static = ()> {
+	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		FinanceMemberStored { added_member: T::AccountId, who: T::AccountId },
@@ -70,7 +137,7 @@ pub mod pallet {
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
-	pub enum Error<T, I = ()> {
+	pub enum Error<T> {
 		/// Error names should be descriptive.
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
@@ -79,11 +146,9 @@ pub mod pallet {
 
 	#[pallet::genesis_config]
 	#[derive(DefaultNoBound)]
-	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
+	pub struct GenesisConfig<T: Config> {
 		/// The root account of the finance controller which can control the finance members
 		pub finance_root: Option<T::AccountId>,
-		#[serde(skip)]
-		pub phantom: sp_std::marker::PhantomData<I>,
 	}
 
 	// impl<T: Config> Default for GenesisConfig<T> {
@@ -94,11 +159,11 @@ pub mod pallet {
 	// }
 
 	#[pallet::genesis_build]
-	impl<T: Config<I>, I: 'static> BuildGenesisConfig for GenesisConfig<T, I> {
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
-			<FinanceRoot<T, I>>::put(self.finance_root.clone());
+			<FinanceRoot<T>>::put(self.finance_root.clone());
 			// init finance members with finance root
-			<FinanceMembers<T, I>>::put(vec![self.finance_root.clone().unwrap()]);
+			<FinanceMembers<T>>::put(vec![self.finance_root.clone().unwrap()]);
 		}
 	}
 
@@ -106,7 +171,7 @@ pub mod pallet {
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
-	impl<T: Config<I>, I: 'static> Pallet<T, I> {
+	impl<T: Config> Pallet<T> {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::call_index(0)]
@@ -122,12 +187,12 @@ pub mod pallet {
 
 			// ensure who is finance root
 			ensure!(
-				<FinanceRoot<T, I>>::get().unwrap() == who,
+				<FinanceRoot<T>>::get().unwrap() == who,
 				"Only finance root can add finance member"
 			);
 
 			// Update storage.
-			<FinanceMembers<T, I>>::mutate(|members| {
+			<FinanceMembers<T>>::mutate(|members| {
 				if !members.contains(&member_account) {
 					members.push(member_account.clone());
 				}
