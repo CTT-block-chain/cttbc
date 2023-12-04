@@ -26,6 +26,7 @@ pallet-asset-conversion = { version = "4.0.0-dev", git = "https://github.com/CTT
 pallet-assets = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 pallet-asset-conversion-tx-payment = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 pallet-asset-tx-payment = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+pallet-skip-feeless-payment = { version = "1.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-block-builder = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-client-api = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-client-db = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master", features = ["rocksdb"]}

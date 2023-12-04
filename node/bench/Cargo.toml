@@ -13,7 +13,7 @@ publish = false
 
 [dependencies]
 array-bytes = "6.1"
-clap = { version = "4.4.3", features = ["derive"] }
+clap = { version = "4.4.10", features = ["derive"] }
 log = "0.4.17"
 node-primitives = { path = "../primitives" }
 node-testing = { path = "../testing" }
@@ -21,8 +21,8 @@ kitchensink-runtime = { path = "../runtime" }
 sc-client-api = {version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sp-runtime = { version = "24.0.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sp-state-machine = { version = "0.28.0", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
-serde = "1.0.188"
-serde_json = "1.0.107"
+serde = "1.0.193"
+serde_json = "1.0.108"
 derive_more = { version = "0.99.17", default-features = false, features = ["display"] }
 kvdb = "0.13.0"
 kvdb-rocksdb = "0.19.0"

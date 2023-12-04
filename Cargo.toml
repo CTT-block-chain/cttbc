@@ -12,9 +12,7 @@ panic = "unwind"
 [workspace]
 members = [
 	"node/cli",
-	"node/executor",
 	"node/runtime",
     "node/rpc",
-    "node/executor",
 	"pallets/*",
 ]

@@ -22,19 +22,16 @@ use kitchensink_runtime::{
 	constants::currency::*, Block, BuildStorage, CheckedExtrinsic, Header, RuntimeCall,
 	RuntimeGenesisConfig, UncheckedExtrinsic,
 };
-use node_executor::ExecutorDispatch;
 use node_primitives::{BlockNumber, Hash};
 use node_testing::keyring::*;
-use sc_executor::{
-	Externalities, NativeElseWasmExecutor, RuntimeVersionOf, WasmExecutionMethod, WasmExecutor,
-	WasmtimeInstantiationStrategy,
-};
+use sc_executor::{Externalities, RuntimeVersionOf};
 use sp_core::{
 	storage::well_known_keys,
 	traits::{CallContext, CodeExecutor, RuntimeCode},
 };
 use sp_runtime::traits::BlakeTwo256;
 use sp_state_machine::TestExternalities as CoreTestExternalities;
+use staging_node_cli::service::RuntimeExecutor;
 
 criterion_group!(benches, bench_execute_block);
 criterion_main!(benches);
@@ -57,12 +54,6 @@ const HEAP_PAGES: u64 = 20;
 
 type TestExternalities<H> = CoreTestExternalities<H>;
 
-#[derive(Debug)]
-enum ExecutionMethod {
-	Native,
-	Wasm(WasmExecutionMethod),
-}
-
 fn sign(xt: CheckedExtrinsic) -> UncheckedExtrinsic {
 	node_testing::keyring::sign(xt, SPEC_VERSION, TRANSACTION_VERSION, GENESIS_HASH)
 }
@@ -79,7 +70,7 @@ fn new_test_ext(genesis_config: &RuntimeGenesisConfig) -> TestExternalities<Blak
 }
 
 fn construct_block<E: Externalities>(
-	executor: &NativeElseWasmExecutor<ExecutorDispatch>,
+	executor: &RuntimeExecutor,
 	ext: &mut E,
 	number: BlockNumber,
 	parent_hash: Hash,
@@ -112,14 +103,7 @@ fn construct_block<E: Externalities>(
 
 	// execute the block to get the real header.
 	executor
-		.call(
-			ext,
-			&runtime_code,
-			"Core_initialize_block",
-			&header.encode(),
-			true,
-			CallContext::Offchain,
-		)
+		.call(ext, &runtime_code, "Core_initialize_block", &header.encode(), CallContext::Offchain)
 		.0
 		.unwrap();
 
@@ -130,7 +114,6 @@ fn construct_block<E: Externalities>(
 				&runtime_code,
 				"BlockBuilder_apply_extrinsic",
 				&i.encode(),
-				true,
 				CallContext::Offchain,
 			)
 			.0
@@ -144,7 +127,6 @@ fn construct_block<E: Externalities>(
 				&runtime_code,
 				"BlockBuilder_finalize_block",
 				&[0u8; 0],
-				true,
 				CallContext::Offchain,
 			)
 			.0
@@ -158,7 +140,7 @@ fn construct_block<E: Externalities>(
 
 fn test_blocks(
 	genesis_config: &RuntimeGenesisConfig,
-	executor: &NativeElseWasmExecutor<ExecutorDispatch>,
+	executor: &RuntimeExecutor,
 ) -> Vec<(Vec<u8>, Hash)> {
 	let mut test_ext = new_test_ext(genesis_config);
 	let mut block1_extrinsics = vec![CheckedExtrinsic {
@@ -180,56 +162,42 @@ fn test_blocks(
 
 fn bench_execute_block(c: &mut Criterion) {
 	let mut group = c.benchmark_group("execute blocks");
-	let execution_methods = vec![
-		ExecutionMethod::Native,
-		ExecutionMethod::Wasm(WasmExecutionMethod::Compiled {
-			instantiation_strategy: WasmtimeInstantiationStrategy::PoolingCopyOnWrite,
-		}),
-	];
 
-	for strategy in execution_methods {
-		group.bench_function(format!("{:?}", strategy), |b| {
-			let genesis_config = node_testing::genesis::config(Some(compact_code_unwrap()));
-			let use_native = match strategy {
-				ExecutionMethod::Native => true,
-				ExecutionMethod::Wasm(..) => false,
-			};
+	group.bench_function("wasm", |b| {
+		let genesis_config = node_testing::genesis::config();
 
-			let executor =
-				NativeElseWasmExecutor::new_with_wasm_executor(WasmExecutor::builder().build());
-			let runtime_code = RuntimeCode {
-				code_fetcher: &sp_core::traits::WrappedRuntimeCode(compact_code_unwrap().into()),
-				hash: vec![1, 2, 3],
-				heap_pages: None,
-			};
+		let executor = RuntimeExecutor::builder().build();
+		let runtime_code = RuntimeCode {
+			code_fetcher: &sp_core::traits::WrappedRuntimeCode(compact_code_unwrap().into()),
+			hash: vec![1, 2, 3],
+			heap_pages: None,
+		};
 
-			// Get the runtime version to initialize the runtimes cache.
-			{
-				let mut test_ext = new_test_ext(&genesis_config);
-				executor.runtime_version(&mut test_ext.ext(), &runtime_code).unwrap();
-			}
+		// Get the runtime version to initialize the runtimes cache.
+		{
+			let mut test_ext = new_test_ext(&genesis_config);
+			executor.runtime_version(&mut test_ext.ext(), &runtime_code).unwrap();
+		}
 
-			let blocks = test_blocks(&genesis_config, &executor);
+		let blocks = test_blocks(&genesis_config, &executor);
 
-			b.iter_batched_ref(
-				|| new_test_ext(&genesis_config),
-				|test_ext| {
-					for block in blocks.iter() {
-						executor
-							.call(
-								&mut test_ext.ext(),
-								&runtime_code,
-								"Core_execute_block",
-								&block.0,
-								use_native,
-								CallContext::Offchain,
-							)
-							.0
-							.unwrap();
-					}
-				},
-				BatchSize::LargeInput,
-			);
-		});
-	}
+		b.iter_batched_ref(
+			|| new_test_ext(&genesis_config),
+			|test_ext| {
+				for block in blocks.iter() {
+					executor
+						.call(
+							&mut test_ext.ext(),
+							&runtime_code,
+							"Core_execute_block",
+							&block.0,
+							CallContext::Offchain,
+						)
+						.0
+						.unwrap();
+				}
+			},
+			BatchSize::LargeInput,
+		);
+	});
 }

@@ -23,6 +23,7 @@ sc-consensus-babe = { version = "0.10.0-dev", git = "https://github.com/CTT-bloc
 sc-consensus-babe-rpc = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-consensus-grandpa = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-consensus-grandpa-rpc = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
+sc-mixnet = { version = "0.1.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-rpc = { version = "4.0.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-rpc-api = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }
 sc-rpc-spec-v2 = { version = "0.10.0-dev", git = "https://github.com/CTT-block-chain/polkadot-sdk.git", branch = "master" }

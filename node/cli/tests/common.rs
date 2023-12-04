@@ -18,7 +18,7 @@
 use codec::{Decode, Encode};
 use frame_support::Hashable;
 use frame_system::offchain::AppCrypto;
-use sc_executor::{error::Result, NativeElseWasmExecutor, WasmExecutor};
+use sc_executor::error::Result;
 use sp_consensus_babe::{
 	digests::{PreDigest, SecondaryPlainPreDigest},
 	Slot, BABE_ENGINE_ID,
@@ -38,10 +38,10 @@ use kitchensink_runtime::{
 	constants::currency::*, Block, BuildStorage, CheckedExtrinsic, Header, Runtime,
 	UncheckedExtrinsic,
 };
-use node_executor::ExecutorDispatch;
 use node_primitives::{BlockNumber, Hash};
 use node_testing::keyring::*;
 use sp_externalities::Externalities;
+use staging_node_cli::service::RuntimeExecutor;
 
 pub const TEST_KEY_TYPE_ID: KeyTypeId = KeyTypeId(*b"test");
 
@@ -97,15 +97,14 @@ pub fn from_block_number(n: u32) -> Header {
 	Header::new(n, Default::default(), Default::default(), [69; 32].into(), Default::default())
 }
 
-pub fn executor() -> NativeElseWasmExecutor<ExecutorDispatch> {
-	NativeElseWasmExecutor::new_with_wasm_executor(WasmExecutor::builder().build())
+pub fn executor() -> RuntimeExecutor {
+	RuntimeExecutor::builder().build()
 }
 
 pub fn executor_call(
 	t: &mut TestExternalities<BlakeTwo256>,
 	method: &str,
 	data: &[u8],
-	use_native: bool,
 ) -> (Result<Vec<u8>>, bool) {
 	let mut t = t.ext();
 
@@ -117,13 +116,13 @@ pub fn executor_call(
 		heap_pages: heap_pages.and_then(|hp| Decode::decode(&mut &hp[..]).ok()),
 	};
 	sp_tracing::try_init_simple();
-	executor().call(&mut t, &runtime_code, method, data, use_native, CallContext::Onchain)
+	executor().call(&mut t, &runtime_code, method, data, CallContext::Onchain)
 }
 
 pub fn new_test_ext(code: &[u8]) -> TestExternalities<BlakeTwo256> {
 	let ext = TestExternalities::new_with_code(
 		code,
-		node_testing::genesis::config(Some(code)).build_storage().unwrap(),
+		node_testing::genesis::config().build_storage().unwrap(),
 	);
 	ext
 }
@@ -168,12 +167,12 @@ pub fn construct_block(
 	};
 
 	// execute the block to get the real header.
-	executor_call(env, "Core_initialize_block", &header.encode(), true).0.unwrap();
+	executor_call(env, "Core_initialize_block", &header.encode()).0.unwrap();
 
 	for extrinsic in extrinsics.iter() {
 		// Try to apply the `extrinsic`. It should be valid, in the sense that it passes
 		// all pre-inclusion checks.
-		let r = executor_call(env, "BlockBuilder_apply_extrinsic", &extrinsic.encode(), true)
+		let r = executor_call(env, "BlockBuilder_apply_extrinsic", &extrinsic.encode())
 			.0
 			.expect("application of an extrinsic failed");
 
@@ -186,7 +185,7 @@ pub fn construct_block(
 	}
 
 	let header = Header::decode(
-		&mut &executor_call(env, "BlockBuilder_finalize_block", &[0u8; 0], true).0.unwrap()[..],
+		&mut &executor_call(env, "BlockBuilder_finalize_block", &[0u8; 0]).0.unwrap()[..],
 	)
 	.unwrap();
 

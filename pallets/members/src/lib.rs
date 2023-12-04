@@ -62,22 +62,21 @@ pub struct ModelExpertDelMemberParams<Account> {
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, RuntimeDebug)]
-pub struct AppKeyManageParams<Account> {
+pub struct AppKeyManageParams<T: Config> {
 	admin: AuthAccountId,
 	app_id: u32,
-	member: Account,
+	member: T::AccountId,
 }
 
-// impl default for AppKeyManageParams
-// impl<Account> Default for AppKeyManageParams<Account> {
-// 	fn default() -> Self {
-// 		AppKeyManageParams {
-// 			admin: AuthAccountId::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
-// 			app_id: 0,
-// 			member: Account::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
-// 		}
-// 	}
-// }
+impl<T: Config> Default for AppKeyManageParams<T> {
+	fn default() -> Self {
+		AppKeyManageParams {
+			admin: AuthAccountId::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
+			app_id: 0,
+			member: T::AccountId::decode(&mut TrailingZeroInput::zeroes()).unwrap(),
+		}
+	}
+}
 
 #[derive(Encode, Decode, Clone, Default, PartialEq, RuntimeDebug)]
 pub struct FinanceMemberParams<Account, Balance> {
@@ -251,6 +250,7 @@ mod tests {
 		type MaxReserves = ConstU32<0>;
 		type ReserveIdentifier = [u8; 8];
 		type RuntimeHoldReason = RuntimeHoldReason;
+		type RuntimeFreezeReason = RuntimeFreezeReason;
 		type FreezeIdentifier = ();
 		type MaxHolds = ConstU32<0>;
 		type MaxFreezes = ConstU32<0>;
